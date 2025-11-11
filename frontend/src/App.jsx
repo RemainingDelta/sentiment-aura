@@ -1,33 +1,42 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import axios from 'axios'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [text, setText] = useState('')
+  const [result, setResult] = useState(null)
+  const BASE = import.meta.env.VITE_BACKEND_URL
+
+  const handleAnalyze = async () => {
+    if (!text) return
+    try {
+      const { data } = await axios.post(`${BASE}/process_text`, { text })
+      setResult(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div style={{ marginTop: 20 }}>
+        <input
+          style={{ padding: '6px', marginRight: '6px' }}
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type something…"
+        />
+        <button onClick={handleAnalyze}>Process Text</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      {result && (
+        <div style={{ marginTop: 12 }}>
+          <p>Label: {result.label}</p>
+          <p>Sentiment: {result.sentiment}</p>
+          <p>Keywords: {result.keywords.join(', ')}</p>
+        </div>
+      )}
     </>
   )
 }
